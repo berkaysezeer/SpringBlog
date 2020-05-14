@@ -64,8 +64,6 @@ namespace SpringBlog.Helpers
                     DisplayName = "Berkay Sezer"
                 };
 
-
-
                 manager.Create(user, "Password1.");
                 manager.AddToRole(user.Id, "admin");
 
