@@ -1,0 +1,92 @@
+﻿@model HomeIndexViewModel
+@{
+    ViewBag.Title = "Home Page";
+}
+
+
+
+<h1 class="my-4">
+
+    @if (Model.SearchTerm != null)
+    {
+        <text>
+            Search Results for &quot;@Model.SearchTerm&quot;
+        </text>
+    }
+    else
+    {
+        @(Model.Category == null ? "My Blog Posts" : Model.Category.CategoryName +" Posts")
+    }
+
+</h1>
+
+@*bir sey aratti ve sonuc yoksa*@
+@if (!Model.Posts.Any() && Model.SearchTerm != null)
+{
+    <p style="color:crimson"><strong>No result found!</strong></p>
+}
+
+
+@foreach (var post in Model.Posts)
+{
+    <div class="card mb-4 blog-post">
+        @if (!string.IsNullOrEmpty(post.PhotoPath))
+        {
+
+            <img class="card-img-top" src="@Url.FeaturedImage(post.PhotoPath)" alt="Card image cap">
+        }
+        <div class="card-body">
+            <h2 class="card-title">@post.Title</h2>
+            <div class="blog-post-content">
+                @Html.Raw(post.Content)
+            </div>
+            <a href="@Url.Action("Show", "Post", new { id = post.Id, slug = post.Slug })" class="btn btn-primary mt-1">Read More &rarr;</a>
+        </div>
+        <div class="card-footer text-muted clearfix">
+            <div class="float-right">
+                @{ var commentCount = post.Comments.Count(x => x.State == CommentState.Approved); }
+                <i class="fas fa-comments"></i>
+                <a href="@Url.Action("Show","Post", new { id = post.Id, slug = post.Slug })#comments">
+                    @commentCount Comment@(commentCount != 1 ? "s" : "" )
+                </a>
+
+            </div>
+
+            Posted on @post.CreationTime.Value.ToShortDateString() by
+            <a href="#">@(post.Author.DisplayName ?? "Anonymous")</a>
+        </div>
+    </div>
+}
+
+<div aria-label="Page Number and Pagination">
+    <div class="mb-3 text-center">
+        Page @(Model.Posts.PageCount < Model.Posts.PageNumber ? 0 : Model.Posts.PageNumber) of @Model.Posts.PageCount
+    </div>
+
+    @Html.PagedListPager(Model.Posts, page => Url.Action("Index",
+        new { page, q = Model.SearchTerm }), new PagedListRenderOptionsBase
+            {
+
+            ContainerDivClasses = new string[] { "pagination-container", "d-flex" },
+            UlElementClasses = new string[] { "pagination", "mx-auto" },
+            LiElementClasses = new string[] { "page-item" },
+            PageClasses = new string[] { "page-link" },
+            EllipsesElementClass = "page-link",
+            LinkToFirstPageFormat = "&laquo;",
+            LinkToLastPageFormat = "&raquo;",
+            LinkToPreviousPageFormat = "&lsaquo;",
+            LinkToNextPageFormat = "&rsaquo;",
+            MaximumPageNumbersToDisplay = 5,
+        })
+</div>
+
+
+@section scripts {
+    <script>
+        $(".blog-post-content").each(function () {
+            if ($(this).outerHeight() >= 500) {
+                $(this).addClass("long-text");
+            }
+        });
+    </script>
+}
